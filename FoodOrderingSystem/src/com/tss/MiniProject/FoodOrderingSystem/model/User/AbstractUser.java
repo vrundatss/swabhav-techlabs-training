@@ -27,13 +27,6 @@ public abstract class AbstractUser implements User {
         public T setPassword(String password) { this.password = password; return self(); }
         public T setEmail(String email) { this.email = email; return self(); }
 
-
-        public T id(String id) { return setId(id); }
-        public T name(String name) { return setName(name); }
-        public T username(String username) { return setUsername(username); }
-        public T password(String password) { return setPassword(password); }
-        public T email(String password) { return setEmail(email); }
-
         public abstract T self();
         public abstract AbstractUser build();
     }

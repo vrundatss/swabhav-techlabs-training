@@ -35,7 +35,7 @@ public class PaymentService {
                         });
             } else {
                 p.markFailed();
-                // set a CancelledStatus or FailedPaymentStatus here
+                // setting a CancelledStatus or FailedPaymentStatus
             }
 
         } catch (IllegalArgumentException ex) {

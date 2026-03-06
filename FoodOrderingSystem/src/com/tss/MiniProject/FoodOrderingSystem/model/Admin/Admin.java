@@ -16,7 +16,7 @@ public class Admin extends AbstractUser implements OrderObserver {
 
     private Admin(Builder builder) {
         super(builder);
-        this.adminLevel = builder.adminLevel != null ? builder.adminLevel : "SUPER";
+        this.adminLevel = builder.adminLevel != null ? builder.adminLevel : "MANAGER";
         this.name = builder.name;
         this.email = builder.email;
     }

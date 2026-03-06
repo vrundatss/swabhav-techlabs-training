@@ -148,25 +148,22 @@ public class OrderService {
             return;
         }
 
-        // --- HEADER ---
         System.out.println("\n" + "═".repeat(50));
         System.out.println(WHITE_BOLD + "       ORDER TRACKING: #" + order.getId() + RESET);
         System.out.println("═".repeat(50));
 
-        // --- ORDER STATUS ---
         String status = order.getStatus().getName().toUpperCase();
         System.out.println(" Current Status : " + getColoredStatus(status));
         System.out.println(" Order Date     : " + order.getCreatedAt()
                 .format(java.time.format.DateTimeFormatter.ofPattern("dd MMM, hh:mm a")));
         System.out.println(" Final Amount   : " + GREEN + "₹" + order.getFinalAmount() + RESET);
 
-        // --- DELIVERY PARTNER SECTION ---
         System.out.println("\n" + WHITE_BOLD + " DELIVERY PARTNER " + RESET);
         System.out.println("-".repeat(50));
 
         if (order.getDeliveryAgentId() != null) {
-            // Fetch agent
-            var agent = facade.getAdminService().getDeliveryAgentById(order.getDeliveryAgentId());
+
+            DeliveryAgent agent = facade.getAdminService().getDeliveryAgentById(order.getDeliveryAgentId());
 
             if (agent != null) {
                 System.out.println(GREEN + " Assigned Delivery Agent " + RESET);
@@ -177,7 +174,7 @@ public class OrderService {
             }
 
         } else {
-            // Not assigned yet
+            // if not assigned yet
             System.out.println(YELLOW + " Status  : Searching for a nearby delivery partner..." + RESET);
             System.out.println(CYAN + " Note    : Your order is confirmed and being prepared!" + RESET);
         }
@@ -189,7 +186,7 @@ public class OrderService {
         System.out.print("Enter Order ID to cancel: ");
         int oid = ValidationUtil.getValidInt(sc, "Order ID", 1);
 
-        // Find the order in the current customer's history
+        // find the order in the current customer's history
         Order order = facade.getAdminService().getUserOrderHistory(currentCustomer.getId())
                 .stream()
                 .filter(o -> o.getId() == oid)
@@ -201,16 +198,17 @@ public class OrderService {
             return;
         }
 
-        // REAL-TIME SECURITY CHECK
-        // 1. Must be Pending status
-        // 2. Must NOT have an agent ID assigned
+        //two conditions for canceling order ==>
+        // first  ==> status is pending
+        // second ==>  agent is not assigned
         boolean isPending = order.getStatus().getName().equalsIgnoreCase("PENDING");
         boolean hasNoAgent = (order.getDeliveryAgentId() == null);
 
         if (isPending && hasNoAgent) {
             System.out.print("Are you sure you want to cancel Order #" + oid + "? (yes/no): ");
+
             if (ValidationUtil.getValidBoolean(sc)) {
-                // Update status in the system
+                // status update
                 order.setStatus(new CancelledStatus());
                 System.out.println("\u001B[32mOrder successfully cancelled. Refund initiated.\u001B[0m");
 

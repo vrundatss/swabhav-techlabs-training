@@ -6,15 +6,14 @@ public class AbstractMenuItem implements MenuItem{
     private final String id;
     private final String name;
     private final Double price;
-//    private Integer stock;
     private final ItemCategoryType category;
     private boolean isAvailable = true;
+//    private Double finalPrice;
 
     public AbstractMenuItem(String id , String name, Double price, ItemCategoryType category ,Boolean isAvailable) {
         this.id = id;
         this.name = name;
         this.price = price;
-//        this.stock = stock;
         this.category = category;
         this.isAvailable = isAvailable;
     }
@@ -33,9 +32,13 @@ public class AbstractMenuItem implements MenuItem{
         return this.price;
     }
 
+//    public Double getFinalPrice() {
+//        return finalPrice;
+//    }
+
     @Override
     public void display() {
-        double finalPrice = category.calculateFinalPrice(price);
+        Double finalPrice = category.calculateFinalPrice(price);
 
         System.out.printf("| %-10s | %-18s | %-15s | %-9.2frs.| %-9.2frs.|%n",
                 id,
@@ -45,28 +48,12 @@ public class AbstractMenuItem implements MenuItem{
                 price,
                 finalPrice);
     }
-//    @Override
-//    public Integer getStock() {
-//        return this.stock;
-//    }
-//
-//    @Override
-//    public void reduceStock(Integer quantity) {
-//        if(quantity <= stock)
-//            stock -= quantity;
-//
-//        throw new IllegalStateException(name + " is out of stock!!!...");
-//    }
 
     public ItemCategoryType getCategory() {
         return category;
     }
 
-//    @Override
-//    public void addStock(Integer quantity) {
-//        stock += quantity;
-//    }
-//
+
     @Override
     public boolean isAvailable() {
         return isAvailable;

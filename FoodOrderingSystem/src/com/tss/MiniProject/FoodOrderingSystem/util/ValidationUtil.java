@@ -34,6 +34,7 @@ public class ValidationUtil {
         }
     }
 
+
     public static String getValidPassword(Scanner sc) {
         while (true) {
             String input = sc.nextLine().trim();
@@ -189,5 +190,16 @@ public class ValidationUtil {
             return false;
         }
         return true;
+    }
+
+    public static String getValidVehicleNumber(Scanner sc) {
+        while (true) {
+            String input = sc.nextLine().trim().toUpperCase();
+            if (Pattern.matches(ID_REGEX, input)) {
+                return input;
+            }
+            System.out.println("Invalid... Vehicle Number must be 3-15 alphanumeric characters.");
+            System.out.print("Enter Vehicle Number again: ");
+        }
     }
 }

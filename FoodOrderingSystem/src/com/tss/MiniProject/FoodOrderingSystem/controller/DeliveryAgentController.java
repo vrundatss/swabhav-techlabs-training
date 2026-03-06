@@ -78,7 +78,7 @@ public class DeliveryAgentController {
         System.out.print("Address: ");
         String address = ValidationUtil.getValidString(sc , "Address");
         System.out.print("Vehicle Number: ");
-        String vehicle = ValidationUtil.getValidString(sc , "Vehicle number");
+        String vehicle = ValidationUtil.getValidVehicleNumber(sc);
         System.out.print("Password: ");
         String password = ValidationUtil.getValidPassword(sc);
 

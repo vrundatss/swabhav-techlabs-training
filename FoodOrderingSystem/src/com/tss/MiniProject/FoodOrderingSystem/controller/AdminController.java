@@ -8,10 +8,11 @@ import com.tss.MiniProject.FoodOrderingSystem.model.Admin.Admin;
 import com.tss.MiniProject.FoodOrderingSystem.model.DeliveryAgent.DeliveryAgent;
 import com.tss.MiniProject.FoodOrderingSystem.model.MenuItem.FoodItem;
 import com.tss.MiniProject.FoodOrderingSystem.model.MenuItem.MenuItem;
+import com.tss.MiniProject.FoodOrderingSystem.model.enums.DynamicCategoryRegistry;
 import com.tss.MiniProject.FoodOrderingSystem.model.enums.ItemCategoryType;
 import com.tss.MiniProject.FoodOrderingSystem.util.ValidationUtil;
 
-import java.util.List;
+import java.util.*;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -99,40 +100,12 @@ public class AdminController {
         System.out.println("=".repeat(100));
     }
 
-//    private void customerSubMenu() {
-//        while (true) {
-//            System.out.println("\n--- CUSTOMER MANAGEMENT ---");
-//            System.out.println("1. List All Customers\n2. Remove Customer\n0. BACK");
-//            int choice = ValidationUtil.getValidInt(sc , "choice" , 0);
-//            if (choice == 0) break;
-//            switch (choice) {
-//                case 1 -> {
-//                    System.out.println("\n--- CUSTOMER LIST ---");
-//                    System.out.println("=".repeat(100));
-//                    System.out.printf("| %-10s | %-15s | %-12s | %-20s | %-20s | %-10s |%n",
-//                            "ID", "NAME", "USERNAME", "EMAIL", "ADDRESS", "PHONE");
-//                    System.out.println("=".repeat(100));
-//
-//                    facade.getAdminService().listCustomers().forEach(System.out::println);
-//
-//                    System.out.println("=".repeat(100));
-//                }
-//
-//                case 2 -> {
-//                    System.out.print("Customer ID to remove: ");
-//                    facade.getAdminService().removeCustomer(ValidationUtil.getValidId(sc));
-//                }
-//            }
-//        }
-//    }
-
     // --- 3. CATEGORY SUBMENU ---
     private void categorySubMenu() {
         while (true) {
             System.out.println("\n--- CATEGORY MANAGEMENT ---");
             System.out.println("1. View All Categories");
             System.out.println("2. Add Category");
-//            System.out.println("3. Remove All Items from Category");
             System.out.println("0. BACK");
             System.out.print("Choice: ");
 
@@ -159,7 +132,7 @@ public class AdminController {
         } catch (DuplicateCategoryException e) {
             System.err.println(e.getMessage());
         } catch (Exception e) {
-            System.err.println("An unexpected exception occurred.");
+            System.err.println("exception occurred while adding category...");
         }
     }
 
@@ -199,6 +172,7 @@ public class AdminController {
         double price = ValidationUtil.getValidDouble(sc, "Price");
 
         System.out.println("\nSelect Category:");
+//        facade.getAdminService().listCategories();
         ItemCategoryType[] categories = ItemCategoryType.values();
         for (int i = 0; i < categories.length; i++) {
             System.out.println((i + 1) + ". " + categories[i].name());
@@ -216,9 +190,7 @@ public class AdminController {
                 .id(autoId)
                 .name(name)
                 .price(price)
-//                .stock(stock)
                 .category(category)
-//                .isAvailable(stock > 0)
                 .build();
 
         try {
@@ -228,7 +200,6 @@ public class AdminController {
             System.out.println(e.getMessage());
         }
     }
-
     private void viewCurrentMenuForAdmin(){
         List<MenuItem> menu = facade.getMenuService().listAllMenuItems();
 
@@ -237,8 +208,8 @@ public class AdminController {
             return;
         }
         System.out.println("\n" + "=".repeat(85));
-        System.out.printf("| %-10s | %-18s | %-15s | %-11s | %-11s |%n",
-                "ID", "ITEM NAME", "CATEGORY", "BASE UNIT", "FINAL PRICE");
+        System.out.printf("| %-10s | %-18s | %-15s | %-11s |%n",
+                "ID", "ITEM NAME", "CATEGORY", "BASE UNIT");
         System.out.println("-".repeat(85));
 
         menu.forEach(MenuItem::display);
@@ -263,7 +234,7 @@ public class AdminController {
             System.out.print("Are you sure you want to " + actionText + " this item? (yes/no): ");
 
             if (ValidationUtil.getValidBoolean(sc)) {
-                // We pass the opposite of the current status to "flip" it
+                // pass the opposite of the current status to toggle it
                 facade.getMenuService().toggleItemStatus(id, !currentStatus);
                 System.out.println("\u001B[32mSuccess : Item is now " + (!currentStatus ? "VISIBLE" : "HIDDEN") + ".\u001B[0m");
             } else {
@@ -345,7 +316,7 @@ public class AdminController {
             if (choice == 0) break;
             switch (choice) {
                 case 1 -> facade.getAnalyticsService().getMostFrequentItems(5).forEach(e ->
-                        System.out.println(e.getKey() + ": " + e.getValue() + " orders"));
+                        System.out.println(e.getKey() + ": " + e.getValue() + " (Qty)"));
                 case 2 -> facade.getAnalyticsService().getMostFrequentCustomers(5).forEach(e ->
                         System.out.println("Customer ID " + e.getKey() + ": " + e.getValue() + " orders"));
             }

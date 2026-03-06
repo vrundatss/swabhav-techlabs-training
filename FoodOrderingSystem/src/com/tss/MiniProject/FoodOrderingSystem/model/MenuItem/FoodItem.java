@@ -1,12 +1,13 @@
 package com.tss.MiniProject.FoodOrderingSystem.model.MenuItem;
 
+import com.tss.MiniProject.FoodOrderingSystem.model.enums.DynamicCategoryRegistry;
+import com.tss.MiniProject.FoodOrderingSystem.model.enums.ItemCategoryType;
+
 import com.tss.MiniProject.FoodOrderingSystem.model.enums.ItemCategoryType;
 
 public class FoodItem extends AbstractMenuItem {
 
-    // Private constructor accepting the Builder
     private FoodItem(Builder b) {
-        // Fixed the syntax error: b.isAvailable was missing
         super(b.id, b.name, b.price, b.category , b.isAvailable);
     }
 

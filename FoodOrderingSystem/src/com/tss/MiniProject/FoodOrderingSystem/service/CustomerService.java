@@ -6,6 +6,7 @@ import com.tss.MiniProject.FoodOrderingSystem.model.MenuItem.MenuItem;
 import com.tss.MiniProject.FoodOrderingSystem.model.Order.Order;
 import com.tss.MiniProject.FoodOrderingSystem.model.Order.PendingStatus;
 import com.tss.MiniProject.FoodOrderingSystem.model.enums.ItemCategoryType;
+import com.tss.MiniProject.FoodOrderingSystem.util.ValidationUtil;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -13,26 +14,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import java.util.Scanner;
 import static com.tss.MiniProject.FoodOrderingSystem.util.ColorUtils.*;
 
 public class CustomerService {
     private final DataStore db = DataStore.getInstance();
+
+    Scanner sc = new Scanner(System.in);
 
     public CustomerService() {}
 
 
     public void registerCustomer(Customer customer) {
         db.getCustomers().add(customer);
-    }
-
-    public Optional<Customer> login(String loginInput, String plainPassword) {
-//        String hashedInput = PasswordUtil.hash(plainPassword); // Hash the input first!
-
-        return db.getCustomers().stream()
-                .filter(c -> (loginInput.equals(c.getUsername()) || loginInput.equals(c.getEmail()))
-                        && plainPassword.equals(c.getPassword()))
-                .findFirst();
     }
 
     public Customer getCustomerById(String customerId) {
@@ -42,55 +36,49 @@ public class CustomerService {
                 .orElse(null);
     }
 
-    public List<MenuItem> viewByCategory(String categoryName) {
-        return db.getMenuItems().stream()
-                // FIRST: Only take items that are NOT hidden
-                .filter(MenuItem::isAvailable)
-                // SECOND: Filter by the chosen category
-                .filter(item -> item.getCategory().name().equalsIgnoreCase(categoryName))
-                .collect(Collectors.toList());
+    public void viewByCategory() {
+        System.out.println("\n" + "\u001B[35m" + "--- SELECT CATEGORY ---" + "\u001B[0m");
+        ItemCategoryType[] categories = ItemCategoryType.values();
+
+        for (int i = 0; i < categories.length; i++) {
+            System.out.printf("%d. %-15s %n", (i + 1), categories[i].name());
+        }
+        System.out.println("0. BACK");
+        System.out.print("Select Category Number: ");
+
+        int catChoice = ValidationUtil.getValidInt(sc, "Category Number", 0);
+
+        if (catChoice > 0 && catChoice <= categories.length) {
+            ItemCategoryType selectedEnum = categories[catChoice - 1];
+            String catName = selectedEnum.name();
+
+            // fetch items  by enum category
+            var items = db.getMenuItems().stream()
+                    .filter(MenuItem::isAvailable)
+                    .filter(i -> i.getCategory() != null)
+                    .filter(i -> i.getCategory().name().equalsIgnoreCase(catName))
+                    .toList();
+
+            if (items.isEmpty()) {
+                System.out.println(YELLOW + "No items currently available in " + catName + "." + RESET);
+            } else {
+                displayHeader(catName);
+                items.forEach(item -> {
+                    double finalPrice = selectedEnum.calculateFinalPrice(item.getPrice());
+                    System.out.printf("| %-10s | %-25s | ₹%-9.2f |%n",
+                            item.getId(), item.getName(), item.getPrice(), finalPrice);
+                });
+                System.out.println("=".repeat(80));
+            }
+        }
     }
 
-
-    public void viewMenuCategorized() {
-        // 1. Grouping ONLY active items by Category
-        Map<ItemCategoryType, List<MenuItem>> groupedMenu = db.getMenuItems().stream()
-                // FILTER: Only include items where active == true
-                .filter(MenuItem::isAvailable)
-                .collect(Collectors.groupingBy(MenuItem::getCategory));
-
-        if (groupedMenu.isEmpty()) {
-            System.out.println(YELLOW + "The menu is currently empty or all items are unavailable." + RESET);
-            return;
-        }
-
-        System.out.println("\n" + "═".repeat(75));
-        System.out.printf(WHITE_BOLD + " %-50s %n" + RESET, "FOOD MENU");
-        System.out.println("═".repeat(75));
-
-        // 2. Iterate through each category group
-        groupedMenu.forEach((category, items) -> {
-            // Print Category Header
-            System.out.println("\n" + PURPLE + category.name() + RESET);
-            System.out.println("─".repeat(85)); // Increased width for the extra column
-
-            // Header with the Final Price column
-            System.out.printf(CYAN + "| %-12s | %-35s | %-12s | %-15s |%n" + RESET,
-                    "ID", "NAME", "PRICE", "FINAL (UNIT)");
-
-            // 3. Print the available items
-            for (MenuItem item : items) {
-                // Calculate the Final Price using the category key from the map
-                double finalPrice = category.calculateFinalPrice(item.getPrice());
-
-                System.out.printf("| %-12s | %-35s | ₹%-11.2f | \u001B[32m₹%-14.2f\u001B[0m |%n",
-                        item.getId(),
-                        item.getName(),
-                        item.getPrice(),
-                        finalPrice);
-            }
-        });
-        System.out.println("═".repeat(85));
+    private void displayHeader(String catName) {
+        System.out.println("\n" + "\u001B[1;37m" + "Items in " + catName.toUpperCase() + "\u001B[0m");
+        System.out.println("=".repeat(80));
+        System.out.printf("| %-10s | %-25s | %-10s |%n",
+                "ID", "NAME", "BASE");
+        System.out.println("=".repeat(80));
     }
 
     // ===> ORDERING FLOW

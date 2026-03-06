@@ -1,9 +1,7 @@
 package com.tss.MiniProject.FoodOrderingSystem.controller;
 
-import com.tss.MiniProject.FoodOrderingSystem.auth.Authenticator.AuthService;
+import com.tss.MiniProject.FoodOrderingSystem.auth.AuthService;
 import com.tss.MiniProject.FoodOrderingSystem.service.*;
-
-import java.util.Scanner;
 
 public class AppFacade {
 

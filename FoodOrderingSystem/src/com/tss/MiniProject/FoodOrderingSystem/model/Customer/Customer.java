@@ -12,7 +12,6 @@ public class Customer extends AbstractUser  implements OrderObserver {
     private String phoneNumber;
     private String address;
 
-    private List<CartItem> cart = new ArrayList<>();
     private List<String> notifications = new ArrayList<>();
 
     private Customer(Builder builder) {
@@ -60,9 +59,6 @@ public class Customer extends AbstractUser  implements OrderObserver {
         public Customer build() {
             return new Customer(this);
         }
-    }
-    public List<CartItem> getCart() {
-        return cart;
     }
 
     public String getEmail() {

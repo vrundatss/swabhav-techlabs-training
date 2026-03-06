@@ -13,7 +13,7 @@ public enum ItemCategoryType {
     BEVERAGE(0.05 , 0.10);
 
     private final double taxRate;
-    private final double categoryDiscount; // fraction
+    private final double categoryDiscount;
 
     ItemCategoryType(double taxRate, double categoryDiscount) {
         this.taxRate = taxRate;

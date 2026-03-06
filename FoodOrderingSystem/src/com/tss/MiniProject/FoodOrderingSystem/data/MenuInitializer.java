@@ -13,10 +13,9 @@ public class MenuInitializer {
         final DataStore db = DataStore.getInstance();
         List<MenuItem> menuItems = db.getMenuItems();
 
-        // Prevent duplicates if menu already loaded
+        // prevent duplicates if menu already loaded
         if (!menuItems.isEmpty()) return;
 
-        // Helper function to simplify building items
         java.util.function.BiFunction<String, ItemCategoryType, FoodItem> item = (name, category) ->
                 new FoodItem.Builder()
                         .id("ITEM-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase())

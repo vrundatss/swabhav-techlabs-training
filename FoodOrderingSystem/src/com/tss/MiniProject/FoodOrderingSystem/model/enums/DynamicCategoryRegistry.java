@@ -22,14 +22,6 @@ public class DynamicCategoryRegistry {
         return dynamicCategories.values();
     }
 
-    // get all categories (enum + dynamic)
-    public static List<String> getAllCategoryNames() {
-        List<String> all = new ArrayList<>();
-        Arrays.stream(ItemCategoryType.values()).forEach(e -> all.add(e.name()));
-        all.addAll(dynamicCategories.keySet());
-        return all;
-    }
-
 
     public static class DynamicCategory {
         private final String name;

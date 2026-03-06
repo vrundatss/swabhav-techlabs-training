@@ -6,7 +6,7 @@ import java.util.Map;
 public class Order {
     private int id;
     private String customerId;
-    private Map<String,Integer> itemIdQty; // itemId -> qty (menu items & combos use id)
+    private Map<String,Integer> itemIdQty; // itemId -> qty
     private double totalAmount;    // subtotal after category pricing and tax
     private double discount;       // total discount applied
     private double finalAmount;    // payable

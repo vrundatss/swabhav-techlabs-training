@@ -29,7 +29,7 @@ public class FestivalDiscountStrategy implements DiscountStrategy {
     private boolean isHoli(LocalDate date) {
         description = "Holi Offer: 35% OFF!";
 
-        return date.getMonth() == Month.MARCH && ( date.getDayOfMonth() == 1  || date.getDayOfMonth() == 2  || date.getDayOfMonth() == 3 || date.getDayOfMonth() == 4 );
+        return date.getMonth() == Month.MARCH && ( date.getDayOfMonth() == 2  || date.getDayOfMonth() == 3 || date.getDayOfMonth() == 4 );
     }
 
     private boolean isNavratri(LocalDate date) {

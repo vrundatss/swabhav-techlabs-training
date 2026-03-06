@@ -33,7 +33,7 @@ public class UserInitializer {
             c2.put("username", "tulsi_123");
             c2.put("email", "tulsi@gmail.com");
             c2.put("password", "Tulsi@123");
-            c1.put("phone", "6234567898");
+            c2.put("phone", "6234567898");
             c2.put("address", "Indira Circle, Rajkot");
 
             Customer customer1 = (Customer) UserFactory.createUser("customer", c1);
@@ -58,7 +58,7 @@ public class UserInitializer {
                 System.out.println(e.getMessage());
             }
 
-            System.out.println("Default Customers Registered: " + db.getCustomers().size());
+            System.out.println("\nDefault Customers Registered: " + db.getCustomers().size());
         }
 
         if (db.getAgents().isEmpty()) {

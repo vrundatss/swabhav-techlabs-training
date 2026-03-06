@@ -4,7 +4,7 @@ public class CancelledStatus implements OrderStatus {
 
     @Override
     public void next(Order order) {
-
+        System.out.println("Order is Canceled...");
     }
 
     @Override

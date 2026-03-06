@@ -4,9 +4,11 @@ import com.tss.MiniProject.FoodOrderingSystem.exceptions.EmailAlreadyExistsExcep
 import com.tss.MiniProject.FoodOrderingSystem.exceptions.PhoneNumberAlreadyExistsException;
 import com.tss.MiniProject.FoodOrderingSystem.exceptions.ResourceNotFoundException;
 import com.tss.MiniProject.FoodOrderingSystem.model.Customer.Customer;
+import com.tss.MiniProject.FoodOrderingSystem.model.DeliveryAgent.DeliveryAgent;
 import com.tss.MiniProject.FoodOrderingSystem.model.MenuItem.MenuItem;
 import com.tss.MiniProject.FoodOrderingSystem.model.Order.CancelledStatus;
 import com.tss.MiniProject.FoodOrderingSystem.model.Order.Order;
+import com.tss.MiniProject.FoodOrderingSystem.model.Payment.Payment;
 import com.tss.MiniProject.FoodOrderingSystem.model.discount.DayBasedDiscountStrategy;
 import com.tss.MiniProject.FoodOrderingSystem.model.discount.DiscountStrategy;
 import com.tss.MiniProject.FoodOrderingSystem.model.discount.FestivalDiscountStrategy;
@@ -142,11 +144,48 @@ public class CustomerController {
             if (choice == 0) break;
 
             switch (choice) {
-                case 1 -> facade.getCustomerService().viewMenuCategorized();
-                case 2 -> viewByCategory();
+                case 1 -> viewMenuForCustomer();
+                case 2 -> facade.getCustomerService().viewByCategory();
                 case 3 -> handleAddToCart();
             }
         }
+    }
+
+    public void viewMenuForCustomer() {
+
+        //  all menu items
+        List<MenuItem> menu = facade.getMenuService().listAllMenuItems();
+
+        //   group by category
+        Map<ItemCategoryType, List<MenuItem>> groupedMenu = menu.stream()
+                .filter(MenuItem::isAvailable)
+                .filter(item -> item.getCategory() != null) // ignore dynamic or null categories
+                .collect(Collectors.groupingBy(MenuItem::getCategory));
+
+        // handle empty menu
+        if (groupedMenu.isEmpty()) {
+            System.out.println("\u001B[33m" + "Sorry! The menu is currently unavailable." + "\u001B[0m");
+            return;
+        }
+
+        System.out.println("\n" + "═".repeat(75));
+        System.out.printf("\u001B[1;37m %-50s %n\u001B[0m", "FOOD MENU");
+        System.out.println("═".repeat(75));
+
+        groupedMenu.forEach((category, items) -> {
+            System.out.println("\n" + "\u001B[35m" + category.name() + "\u001B[0m");
+            System.out.println("─".repeat(70));
+            System.out.printf("| %-12s | %-40s | %-10s |%n", "ID", "NAME", "PRICE");
+
+            for (MenuItem item : items) {
+                System.out.printf("| %-12s | %-40s | ₹%-8.2f |%n",
+                        item.getId(),
+                        item.getName(),
+                        item.getPrice());
+            }
+        });
+
+        System.out.println("═".repeat(75));
     }
 
     // --- SUBMENU 2: CART & CHECKOUT ---
@@ -189,7 +228,7 @@ public class CustomerController {
                 System.out.print("Enter Item ID to remove: ");
                 String rid = ValidationUtil.getValidId(sc);
                 facade.getCartService().removeFromCart(currentCustomer.getId(), rid);
-                continue; // Refresh the cart view
+                continue; // to view modified cart again
             }
 
             if (choice == 4) {
@@ -214,7 +253,7 @@ public class CustomerController {
             double finalPayable = total - discountAmount;
 
             try {
-                // 1. Create the order in the system first
+                // create order
                 Order order = facade.getCustomerService()
                         .checkout(currentCustomer.getId(), cart, total, discountAmount, finalPayable, discountName);
 
@@ -231,18 +270,18 @@ public class CustomerController {
                 }
 
 
-                // 2. Capture the payment result
+                // capture the payment result
                 boolean paymentSuccess = facade.getPaymentService().handlePayment(sc, order);
 
-                // 3. ONLY proceed if payment was successful
+                // proceed if payment was successful
                 if (paymentSuccess) {
-                    // Clear cart only after successful money collection
+                    // clear cart after successful money collection
                     facade.getCartService().clearCart(currentCustomer.getId());
 
                     System.out.println("\n\u001B[32mPayment successful! Generating your invoice...\u001B[0m");
 
-                    var payment = facade.getPaymentService().findPaymentByOrderId(order.getId());
-                    var agent = facade.getAdminService().getDeliveryAgentById(order.getDeliveryAgentId());
+                    Payment payment = facade.getPaymentService().findPaymentByOrderId(order.getId());
+                    DeliveryAgent agent = facade.getAdminService().getDeliveryAgentById(order.getDeliveryAgentId());
 
                     facade.getInvoiceService().printInvoice(order, payment, agent);
 
@@ -253,14 +292,13 @@ public class CustomerController {
                     facade.getNotificationService().notifyAdmins("New order #" + order.getId() + " placed by " + currentCustomer.getUsername());
                     facade.getNotificationService().notifyAgents("New order available for delivery...");
 
-                    break; // Exit the cart menu
+                    break;
                 } else {
-                    // 4. If payment was cancelled, we must handle the "Ghost Order"
-                    // We remove the order from the DB because it wasn't paid for
+
+                    // if payment was cancelled remove the order from the list because it wasn't paid for
                     facade.getOrderService().removeOrder(order.getId());
 
                     System.out.println("\u001B[33mPayment was not completed. Your items are still in the cart.\u001B[0m");
-                    // We do NOT break, so the loop continues and shows the cart again
                 }
 
             } catch (Exception e) {
@@ -273,13 +311,16 @@ public class CustomerController {
         List<DiscountStrategy> activeDiscounts = new ArrayList<>();
 
         FestivalDiscountStrategy festival = new FestivalDiscountStrategy();
-        if (festival.isApplicable(total)) activeDiscounts.add(festival);
+        if (festival.isApplicable(total))
+            activeDiscounts.add(festival);
 
         DayBasedDiscountStrategy day = new DayBasedDiscountStrategy();
-        if (day.isApplicable(total)) activeDiscounts.add(day);
+        if (day.isApplicable(total))
+            activeDiscounts.add(day);
 
         FlatBillDiscountStrategy bill = new FlatBillDiscountStrategy();
-        if (bill.isApplicable(total)) activeDiscounts.add(bill);
+        if (bill.isApplicable(total))
+            activeDiscounts.add(bill);
 
         if (activeDiscounts.isEmpty()) {
             return null;
@@ -299,12 +340,11 @@ public class CustomerController {
 
     private void handleAddToCart() {
 
-        facade.getCustomerService().viewMenuCategorized();
+        viewMenuForCustomer();
 
         System.out.print("Enter Item ID: ");
         String itemId = ValidationUtil.getValidId(sc);
 
-        // 1. Check if item exists in menu
         MenuItem item = facade.getMenuService().getItemById(itemId);
 
         if (item != null) {
@@ -313,14 +353,6 @@ public class CustomerController {
 
             facade.getCartService().addToCart(currentCustomer.getId(), itemId, qty);
             System.out.println("Item Successfully added to cart.");
-//            // 2. Validate Stock
-//            if (qty <= item.getStock()) {
-//                // 3. Use your specific Map-based logic
-//                facade.getCustomerService().addToCart(currentCustomer.getId(), itemId, qty);
-//                System.out.println("Item Successfully added to cart.");
-//            } else {
-//                System.out.println("Insufficient stock.");
-//            }
         } else {
             try {
                 throw new ResourceNotFoundException("Item not found.");
@@ -332,7 +364,6 @@ public class CustomerController {
 
     private void notificationMenu() {
         System.out.println("\n--- INBOX ---");
-        // Assuming currentAccount (Customer/Admin/Agent) is logged in
         var inbox = currentCustomer.getNotifications();
 
         if (inbox.isEmpty()) {
@@ -358,12 +389,12 @@ public class CustomerController {
                 break;
             }
 
-            // Expanded Header to include Items
             System.out.printf("%-5s | %-30s | %-12s | %-10s | %-10s%n", "ID", "ITEMS", "STATUS", "TOTAL", "DATE");
             System.out.println("-".repeat(85));
 
             for (Order o : history) {
-                // Logic to convert ID map into a String of Names
+
+                // to convert ID map into a String of Names
                 String itemNames = o.getItemIdQty().keySet().stream()
                         .map(id -> {
                             MenuItem item = facade.getMenuService().getItemById(id);
@@ -379,7 +410,7 @@ public class CustomerController {
                         o.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             }
 
-            System.out.println("\n1. View Full Details (Tracking)");
+            System.out.println("\n1. View Full Details / Order Tracking");
             System.out.println("2. Cancel Order (Only if Pending and Not Assigned)");
             System.out.println("0. BACK");
             System.out.print("Selection: ");
@@ -391,45 +422,4 @@ public class CustomerController {
         }
     }
 
-    private void viewByCategory() {
-        System.out.println("\n" + "\u001B[35m" + "--- SELECT CATEGORY ---" + "\u001B[0m");
-        ItemCategoryType[] categories = ItemCategoryType.values();
-
-        for (int i = 0; i < categories.length; i++) {
-            System.out.printf("%d. %-15s %n", (i + 1), categories[i].name());
-        }
-        System.out.println("0. BACK");
-        System.out.print("Select Category Number: ");
-
-        int catChoice = ValidationUtil.getValidInt(sc, "Category Number", 0);
-
-        if (catChoice > 0 && catChoice <= categories.length) {
-            ItemCategoryType selectedEnum = categories[catChoice - 1];
-            String catName = selectedEnum.name();
-
-            // This call now returns ONLY active items thanks to the fix in Step 1
-            var items = facade.getCustomerService().viewByCategory(catName);
-
-            if (items.isEmpty()) {
-                // This will now trigger if the item (Soft Drink) is set to inactive
-                System.out.println("\u001B[33m" + "No items currently available in " + catName + "." + "\u001B[0m");
-            } else {
-                displayHeader(catName);
-                items.forEach(item -> {
-                    double finalPrice = selectedEnum.calculateFinalPrice(item.getPrice());
-                    System.out.printf("| %-10s | %-25s | ₹%-9.2f | \u001B[32m₹%-12.2f\u001B[0m |%n",
-                            item.getId(), item.getName(), item.getPrice(), finalPrice);
-                });
-                System.out.println("=".repeat(80));
-            }
-        }
-    }
-
-    private void displayHeader(String catName) {
-        System.out.println("\n" + "\u001B[1;37m" + "Items in " + catName.toUpperCase() + "\u001B[0m");
-        System.out.println("=".repeat(80));
-        System.out.printf("\u001B[36m" + "| %-10s | %-25s | %-10s | %-14s |" + "\u001B[0m" + "%n",
-                "ID", "NAME", "BASE", "FINAL (TAX/DISC)");
-        System.out.println("=".repeat(80));
-    }
 }

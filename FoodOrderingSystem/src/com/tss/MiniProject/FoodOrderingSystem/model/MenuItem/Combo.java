@@ -64,36 +64,4 @@ public class Combo extends AbstractMenuItem {
         System.out.printf("Combo Price: %.2f%n", getPrice() + " rs.");
     }
 
-//    @Override
-//    public Integer getStock() {
-//        // Stock = lowest available stock among included items
-//        return items.stream()
-//                .filter(i -> i instanceof Inventory)
-//                .mapToInt(i -> ((Inventory) i).getStock())
-//                .min()
-//                .orElse(0);
-//    }
-//
-//    @Override
-//    public void reduceStock(Integer quantity) {
-//        for (MenuItem item : items) {
-//            if (item instanceof Inventory inventory) {
-//                inventory.reduceStock(quantity);
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void addStock(Integer quantity) {
-//        for (MenuItem item : items) {
-//            if (item instanceof Inventory inventory) {
-//                inventory.addStock(quantity);
-//            }
-//        }
-//    }
-
-//    @Override
-//    public boolean isAvailable() {
-//        return getStock() > 0 && super.isAvailable();
-//    }
 }

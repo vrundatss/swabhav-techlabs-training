@@ -9,9 +9,7 @@ import java.util.Map;
 
 public class CartService {
 
-    private final DataStore db =DataStore.getInstance();
-
-    // Map of CustomerID ==> (MenuItemID , Quantity)
+    // map of CustomerID ==> (ItemID , quantity)
     private final Map<String, Map<String, Integer>> activeCarts = new HashMap<>();
 
     public void addToCart(String customerId, String menuItemId, int quantity) {
