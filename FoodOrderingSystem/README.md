@@ -27,3 +27,14 @@ Availability Toggle: Agents can set themselves as Available or Busy.
 Earning Wallet: Automated credit of delivery fees upon successful delivery completion.
 
 Task Inbox: Separate notification stream for assigned tasks.
+
+| Concept                        | Where Used                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| **OOP Principles**             | Encapsulation (in models), Inheritance (statuses), Polymorphism (discount strategies) |
+| **Design Patterns**            | Factory (for payment), Strategy (for discounts), Facade (AppFacade)                   |
+| **Collections Framework**      | `Map`, `List`, `Stream API` for filtering and grouping                                |
+| **Exception Handling**         | Custom `ResourceNotFoundException` for robust flow                                    |
+| **Enums & Inner Classes**      | Category types, order states                                                          |
+| **Java 8 Streams & Lambdas**   | Filtering menu, searching orders                                                      |
+| **Serialization-ready Models** | Easy to persist in the future                                                         |
+| **Database Connection**        | Easy to connect with SQL/NoSQL Database in the future
